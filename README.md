@@ -24,8 +24,13 @@ A modern, interactive palmistry application that uses AI to analyze palm feature
 - Node.js (v16 or higher)
 - React Native development environment
 - Android Studio (for Android development)
-- Xcode (for iOS development)
+- Xcode (for iOS development - macOS only)
 - Google Gemini API key
+
+**Platform Support:**
+- **Windows**: Android development only
+- **macOS**: Both Android and iOS development
+- **Linux**: Android development only
 
 ### Installation
 

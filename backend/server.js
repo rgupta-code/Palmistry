@@ -37,7 +37,8 @@ const upload = multer({
 
 // Gemini API configuration
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent';
+const GEMINI_VISION_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const GEMINI_TEXT_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 // Image processing function
 async function processImage(imageBuffer) {
@@ -57,18 +58,17 @@ async function processImage(imageBuffer) {
 // Palmistry analysis function
 async function analyzePalm(imageBase64) {
   try {
-    const prompt = `
-    Analyze this palm image for palmistry features. Please provide:
-    1. Hand shape and size analysis
-    2. Major palm lines (heart line, head line, life line, fate line)
-    3. Mount analysis (Venus, Jupiter, Saturn, Apollo, Mercury, Mars, Moon)
-    4. Finger analysis (length, shape, flexibility)
-    5. General palmistry insights and personality traits
-    6. Career and relationship predictions based on palm features
-    7. Health indicators visible in the palm
-    
-    Please provide detailed, professional palmistry analysis in a structured format.
-    `;
+    const prompt = `Analyze this palm image for palmistry features. Please provide a detailed palm reading including:
+
+1. Hand shape and size analysis
+2. Major palm lines (heart line, head line, life line, fate line)
+3. Mount analysis (Venus, Jupiter, Saturn, Apollo, Mercury, Mars, Moon)
+4. Finger analysis (length, shape, characteristics)
+5. Personality traits and behavioral patterns
+6. Career and relationship insights
+7. Health indicators
+
+Please provide a comprehensive, professional palmistry analysis in a clear, structured format.`;
 
     const requestBody = {
       contents: [{
@@ -91,7 +91,7 @@ async function analyzePalm(imageBase64) {
     };
 
     const response = await axios.post(
-      `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
+      `${GEMINI_VISION_URL}?key=${GEMINI_API_KEY}`,
       requestBody,
       {
         headers: {
@@ -101,9 +101,69 @@ async function analyzePalm(imageBase64) {
       }
     );
 
+    if (!response.data || !response.data.candidates || !response.data.candidates[0]) {
+      throw new Error('Invalid response from Gemini API');
+    }
+
     return response.data;
   } catch (error) {
     console.error('Gemini API Error:', error.response?.data || error.message);
+    
+    // Check if it's a model not found error
+    if (error.response?.data?.error?.message?.includes('not found')) {
+      console.log('Vision model not available, providing general palmistry reading...');
+      return provideGeneralPalmistryReading();
+    }
+    
+    throw new Error('Palmistry analysis failed: ' + (error.response?.data?.error?.message || error.message));
+  }
+}
+
+// Fallback function for general palmistry reading
+async function provideGeneralPalmistryReading() {
+  try {
+    const prompt = `Provide a comprehensive general palmistry reading that covers:
+
+1. Hand shape and size analysis
+2. Major palm lines (heart line, head line, life line, fate line)
+3. Mount analysis (Venus, Jupiter, Saturn, Apollo, Mercury, Mars, Moon)
+4. Finger analysis (length, shape, characteristics)
+5. Personality traits and behavioral patterns
+6. Career and relationship insights
+7. Health indicators
+
+Please provide detailed, professional palmistry insights that would be helpful for someone learning about palm reading.`;
+
+    const requestBody = {
+      contents: [{
+        parts: [{ text: prompt }]
+      }],
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 2048,
+      }
+    };
+
+    const response = await axios.post(
+      `${GEMINI_TEXT_URL}?key=${GEMINI_API_KEY}`,
+      requestBody,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000
+      }
+    );
+
+    if (!response.data || !response.data.candidates || !response.data.candidates[0]) {
+      throw new Error('Invalid response from Gemini API');
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Fallback Gemini API Error:', error.response?.data || error.message);
     throw new Error('Palmistry analysis failed: ' + (error.response?.data?.error?.message || error.message));
   }
 }

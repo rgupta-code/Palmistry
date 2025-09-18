@@ -10,7 +10,7 @@
     "backend": "cd backend && npm start",
     "dev": "concurrently \"npm run backend\" \"npm start\"",
     "setup": "node setup.js",
-    "postinstall": "cd ios && pod install"
+    "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {
     "react": "18.2.0",

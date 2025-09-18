@@ -73,15 +73,18 @@ console.log(`\n📱 Platform detected: ${platform}`);
 if (platform === 'darwin') {
   console.log('🍎 iOS setup:');
   console.log('   - Make sure Xcode is installed');
+  console.log('   - Install CocoaPods: sudo gem install cocoapods');
   console.log('   - Run: cd ios && pod install');
 } else if (platform === 'win32') {
   console.log('🪟 Windows setup:');
   console.log('   - Make sure Android Studio is installed');
   console.log('   - Set up Android SDK and environment variables');
+  console.log('   - iOS development not available on Windows');
 } else {
   console.log('🐧 Linux setup:');
   console.log('   - Make sure Android Studio is installed');
   console.log('   - Set up Android SDK and environment variables');
+  console.log('   - iOS development not available on Linux');
 }
 
 console.log('\n🎉 Setup completed! Next steps:');
